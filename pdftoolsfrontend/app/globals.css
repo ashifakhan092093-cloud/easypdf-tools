@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Global Reset */
+body {
+  @apply bg-gray-100 text-gray-900 m-0 p-0 font-sans;
+}
+
+/* Button */
+.btn {
+  @apply bg-red-600 text-white px-4 py-2 rounded-md shadow transition;
+}
+
+.btn:hover {
+  @apply bg-red-700;
+}
+
+/* Page Title */
+.page-title {
+  @apply text-3xl font-bold mb-6 text-center;
+}
