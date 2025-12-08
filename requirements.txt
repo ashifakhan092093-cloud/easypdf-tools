@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-python-multipart
-reportlab
-python-docx
-PyPDF2
-Pillow
