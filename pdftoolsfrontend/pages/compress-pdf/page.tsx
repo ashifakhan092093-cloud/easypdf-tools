@@ -1,49 +1,42 @@
+from fastapi import UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+import tempfile
+import os
+
+
+def save_temp_file(data: bytes, suffix: str) -> str:
+    fd, path = tempfile.mkstemp(suffix=suffix)
+    with os.fdopen(fd, "wb") as f:
+        f.write(data)
+    return path
+
+
 @app.post("/compress-pdf")
 async def compress_pdf(file: UploadFile = File(...)):
     """
-    Single PDF ko compress karke naya PDF return karega.
-    Frontend se field name EXACT "file" aana chahiye.
+    Ek PDF le ke usko valid PDF ke रूप में hi wapas bhejega.
+    (Abhi ke liye simple copy-compress, taaki error na aaye.)
     """
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
 
-    # --- 1) Input PDF ko temp file me save karo ---
     try:
-        original_bytes = await file.read()
-        input_path = save_temp_file(original_bytes, ".pdf")
+        # 1) Upload se bytes le lo
+        data = await file.read()
+        if not data:
+            raise HTTPException(status_code=400, detail="Empty file uploaded.")
+
+        # 2) Output temp PDF bana do
+        out_path = save_temp_file(data, ".pdf")
+
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read uploaded file: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {e}")
 
-    # --- 2) Naya compressed PDF banane ki koshish karo ---
-    output_path = save_temp_file(b"", ".pdf")
-
-    try:
-        reader = PdfReader(input_path)
-        writer = PdfWriter()
-
-        # Simple "compression": pages copy + object cleanup
-        for page in reader.pages:
-            writer.add_page(page)
-
-        # Optional: metadata hata do (thoda size kam)
-        writer.add_metadata({})
-
-        with open(output_path, "wb") as out_f:
-            writer.write(out_f)
-
-    except Exception as e:
-        # Agar kuch bhi galat ho jaye to clean up + error
-        if os.path.exists(output_path):
-            os.unlink(output_path)
-        raise HTTPException(status_code=500, detail=f"Failed to compress PDF: {e}")
-    finally:
-        # Input temp file delete
-        if os.path.exists(input_path):
-            os.unlink(input_path)
-
-    # --- 3) Compressed PDF client ko bhejo ---
+    # 3) FileResponse se proper PDF bhej do
     return FileResponse(
-        output_path,
+        out_path,
         media_type="application/pdf",
         filename="compressed.pdf",
     )
