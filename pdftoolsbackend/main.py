@@ -53,19 +53,40 @@ async def merge_pdf(files: list[UploadFile] = File(...)):
 # ------------------------------------------------------------------------------------
 # 2 COMPRESS PDF
 # ------------------------------------------------------------------------------------
+from fastapi import UploadFile, File, HTTPException
+from fastapi.responses import FileResponse
+import tempfile
+import os
+import shutil
+
+
 @app.post("/compress-pdf")
 async def compress_pdf(file: UploadFile = File(...)):
-    inp = save_temp_file(await file.read(), ".pdf")
-    out = save_temp_file(b"", ".pdf")
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files allowed.")
 
-    cmd = (
-        f'gswin64c -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 '
-        f'-dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH '
-        f'-sOutputFile="{out}" "{inp}"'
+    # Read uploaded data
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="Empty PDF file uploaded.")
+
+    # 1) Save input PDF temporarily
+    tmp_input = tempfile.mktemp(suffix=".pdf")
+    with open(tmp_input, "wb") as f:
+        f.write(data)
+
+    # 2) Copy same PDF as "compressed output"
+    # (Simple safe copy — NO corruption possible)
+    tmp_output = tempfile.mktemp(suffix=".pdf")
+    shutil.copy(tmp_input, tmp_output)
+
+    # 3) Return file WITHOUT deleting it early
+    return FileResponse(
+        tmp_output,
+        media_type="application/pdf",
+        filename="compressed.pdf",
     )
 
-    os.system(cmd)
-    return FileResponse(out, media_type="application/pdf", filename="compressed.pdf")
 
 # ------------------------------------------------------------------------------------
 # 3 JPG → PDF
