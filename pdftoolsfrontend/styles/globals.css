@@ -2,14 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---- Optional Global Styling (Safe to keep) ---- */
-
+/* GLOBAL STYLES */
 html, body {
   scroll-behavior: smooth;
-  background-color: #f9fafb; /* Light gray background */
+  background-color: #0f172a; /* Slate-900 style */
 }
 
-/* Hide scrollbar for cleaner UI */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
 }
