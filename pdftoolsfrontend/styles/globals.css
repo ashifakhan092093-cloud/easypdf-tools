@@ -1,16 +1,22 @@
-body {
-  margin: 0;
-  padding: 20px;
-  font-family: Arial, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Optional Global Styling (Safe to keep) ---- */
+
+html, body {
+  scroll-behavior: smooth;
+  background-color: #f9fafb; /* Light gray background */
 }
-ul {
-  list-style: none;
-  padding: 0;
+
+/* Hide scrollbar for cleaner UI */
+::-webkit-scrollbar {
+  width: 8px;
 }
-li {
-  margin: 8px 0;
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
 }
-a {
-  color: blue;
-  text-decoration: underline;
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
