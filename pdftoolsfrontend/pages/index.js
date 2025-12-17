@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const FILTERS = [
@@ -29,6 +29,12 @@ const TOOLS = [
 export default function Home() {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // for smooth entrance animation only on client
+    setMounted(true);
+  }, []);
 
   const filteredTools = TOOLS.filter((tool) => {
     const matchesFilter = filter === "All" || tool.tag === filter;
@@ -41,7 +47,7 @@ export default function Home() {
   });
 
   return (
-    <main className="page">
+    <main className={`page ${mounted ? "page--mounted" : ""}`}>
       {/* HEADER */}
       <header className="header">
         <div className="header-inner">
@@ -52,9 +58,9 @@ export default function Home() {
               <div className="header-subtitle">Fast • Free • Secure</div>
             </div>
           </div>
-          <div className="header-pill">
+          <button className="header-pill">
             All tools for your everyday PDF work
-          </div>
+          </button>
         </div>
       </header>
 
@@ -64,7 +70,8 @@ export default function Home() {
           Work with your <span className="hero-title-green">PDFs</span> effortlessly
         </h1>
         <p className="hero-desc">
-          Professional tools to merge, split, compress, convert, rotate, unlock and watermark PDFs — all in one clean workspace.
+          Professional tools to merge, split, compress, convert, rotate, unlock and watermark PDFs —
+          all in one clean workspace.
         </p>
       </section>
 
@@ -99,30 +106,65 @@ export default function Home() {
 
       {/* TOOLS GRID */}
       <section className="tools-grid">
-        {filteredTools.map((tool) => (
-          <Link key={tool.name} href={tool.href} className="tool-card">
-            <div className="tool-top">
-              <div className="tool-icon">PDF</div>
-              <div className="tool-texts">
-                <div className="tool-name">{tool.name}</div>
-                <div className="tool-desc">{tool.desc}</div>
+        {filteredTools.map((tool, index) => (
+          <Link
+            key={tool.name}
+            href={tool.href}
+            className="tool-card"
+          >
+            <div
+              className="tool-card-inner"
+              style={{ animationDelay: `${index * 0.03}s` }}
+            >
+              <div className="tool-top">
+                <div className="tool-icon">PDF</div>
+                <div className="tool-texts">
+                  <div className="tool-name">{tool.name}</div>
+                  <div className="tool-desc">{tool.desc}</div>
+                </div>
               </div>
-            </div>
-            <div className="tool-bottom">
-              <span>{tool.tag}</span>
-              <span className="tool-open">Open →</span>
+              <div className="tool-bottom">
+                <span>{tool.tag}</span>
+                <span className="tool-open">Open →</span>
+              </div>
             </div>
           </Link>
         ))}
       </section>
 
+      {/* FOOTER */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <span>© {new Date().getFullYear()} EasyPDF Tools</span>
+          <span className="footer-dot">•</span>
+          <span>Secure file processing, no signup required.</span>
+        </div>
+      </footer>
+
       <style jsx>{`
         .page {
           min-height: 100vh;
-          background: #ffffff;
+          background: #f3f4f6;
           color: #0f172a;
           font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
             sans-serif;
+          opacity: 0;
+          transform: translateY(8px);
+        }
+
+        .page--mounted {
+          animation: pageFadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes pageFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         /* HEADER */
@@ -139,7 +181,7 @@ export default function Home() {
         .header-inner {
           max-width: 1120px;
           margin: 0 auto;
-          padding: 12px 16px;
+          padding: 14px 16px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -154,8 +196,8 @@ export default function Home() {
         .header-logo {
           width: 36px;
           height: 36px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.25);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.2);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -182,11 +224,14 @@ export default function Home() {
 
         .header-pill {
           display: none;
-          padding: 4px 12px;
+          padding: 6px 14px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.5);
-          background: rgba(255, 255, 255, 0.18);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.2);
           font-size: 11px;
+          color: #ffffff;
+          cursor: default;
+          white-space: nowrap;
         }
 
         @media (min-width: 640px) {
@@ -211,7 +256,7 @@ export default function Home() {
 
         @media (min-width: 640px) {
           .hero-title {
-            font-size: 40px;
+            font-size: 42px;
           }
         }
 
@@ -220,7 +265,7 @@ export default function Home() {
         }
 
         .hero-desc {
-          margin-top: 12px;
+          margin-top: 14px;
           font-size: 14px;
           line-height: 1.6;
           color: #4b5563;
@@ -229,11 +274,11 @@ export default function Home() {
         /* TOOLBAR */
         .toolbar {
           max-width: 1120px;
-          margin: 26px auto 0 auto;
+          margin: 30px auto 0 auto;
           padding: 0 16px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
 
         @media (min-width: 768px) {
@@ -252,7 +297,7 @@ export default function Home() {
 
         .filter-btn {
           border-radius: 999px;
-          padding: 6px 14px;
+          padding: 7px 16px;
           font-size: 13px;
           border: 1px solid #e5e7eb;
           background-color: #ffffff;
@@ -270,7 +315,7 @@ export default function Home() {
           background-color: #059669;
           border-color: #059669;
           color: #ffffff;
-          box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
         }
 
         .search-wrapper {
@@ -281,12 +326,13 @@ export default function Home() {
 
         .search-input {
           width: 100%;
-          padding: 8px 14px 8px 28px;
+          padding: 8px 14px 8px 30px;
           border-radius: 999px;
           border: 1px solid #d1d5db;
           font-size: 13px;
           outline: none;
           transition: all 0.15s ease-out;
+          background: #ffffff;
         }
 
         .search-input:focus {
@@ -308,10 +354,10 @@ export default function Home() {
         .tools-grid {
           max-width: 1120px;
           margin: 32px auto 48px auto;
-          padding: 0 16px 32px 16px;
+          padding: 0 16px 40px 16px;
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: 18px;
         }
 
         @media (min-width: 640px) {
@@ -327,25 +373,41 @@ export default function Home() {
         }
 
         .tool-card {
+          text-decoration: none;
+          color: inherit;
+        }
+
+        .tool-card-inner {
           background-color: #ffffff;
           border-radius: 18px;
           border: 1px solid #e5e7eb;
           padding: 18px 18px 12px 18px;
-          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
           display: flex;
           flex-direction: column;
           gap: 10px;
-          text-decoration: none;
-          color: inherit;
-          transform: translateY(0);
+          transform: translateY(6px);
+          opacity: 0;
           transition: transform 0.18s ease-out, box-shadow 0.18s ease-out,
             border-color 0.18s ease-out;
+          animation: cardFadeUp 0.35s ease-out forwards;
         }
 
-        .tool-card:hover {
-          transform: translateY(-4px);
+        .tool-card:hover .tool-card-inner {
+          transform: translateY(-2px);
           border-color: #059669;
-          box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25);
+          box-shadow: 0 14px 28px rgba(16, 185, 129, 0.22);
+        }
+
+        @keyframes cardFadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .tool-top {
@@ -398,6 +460,28 @@ export default function Home() {
 
         .tool-card:hover .tool-open {
           color: #059669;
+        }
+
+        /* FOOTER */
+        .footer {
+          border-top: 1px solid #e5e7eb;
+          background: #ffffff;
+        }
+
+        .footer-inner {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 14px 16px 20px 16px;
+          font-size: 12px;
+          color: #6b7280;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .footer-dot {
+          opacity: 0.7;
         }
       `}</style>
     </main>
