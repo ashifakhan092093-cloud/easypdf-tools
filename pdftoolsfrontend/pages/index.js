@@ -24,6 +24,17 @@ const TOOLS = [
   { name: "Watermark PDF", href: "/watermark/page", desc: "Add text or image watermarks.", tag: "Edit PDF" },
   { name: "Repair PDF", href: "/repair-pdf/page", desc: "Recover damaged PDF files.", tag: "Edit PDF" },
   { name: "Add Page Numbers", href: "/add-page-number/page", desc: "Insert page numbers in long documents.", tag: "Edit PDF" },
+  {
+  title: "PDF to JPG",
+  desc: "Convert each PDF page into JPG images (ZIP download).",
+  href: "/pdf-to-jpg/page",
+},
+{
+  title: "JPG to PDF",
+  desc: "Convert multiple JPG images into a single PDF.",
+  href: "/jpg-to-pdf/page",
+},
+
 ];
 
 export default function Home() {
