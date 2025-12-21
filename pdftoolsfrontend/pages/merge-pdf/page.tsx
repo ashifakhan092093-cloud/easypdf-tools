@@ -1,23 +1,48 @@
+"use client";
+
 import { useState } from "react";
 import Link from "next/link";
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://easypdf-tools.onrender.com";
+
 export default function MergePdfPage() {
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const [keepOrder, setKeepOrder] = useState(true);
+  const [createCompressed, setCreateCompressed] = useState(false);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleFileChange = (e) => {
+  const onPickFiles = (picked: FileList | null) => {
     setError("");
-    const selected = Array.from(e.target.files || []);
-    setFiles(selected);
+    setSuccessMsg("");
+    setDownloadUrl("");
+
+    if (!picked || picked.length === 0) {
+      setFiles([]);
+      return;
+    }
+
+    // only PDFs
+    const arr = Array.from(picked).filter((f) =>
+      f.type?.includes("pdf") || f.name.toLowerCase().endsWith(".pdf")
+    );
+
+    setFiles(arr);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
-    if (!files.length) {
-      setError("Please select at least one PDF file.");
+    setError("");
+    setSuccessMsg("");
+    setDownloadUrl("");
+
+    if (!files || files.length < 2) {
+      setError("Please select at least 2 PDF files.");
       return;
     }
 
@@ -25,32 +50,38 @@ export default function MergePdfPage() {
       setIsProcessing(true);
 
       const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
+      files.forEach((f) => formData.append("files", f)); // backend expects "files"
+
+      // optional flags (safe: backend ignore kare to bhi fine)
+      formData.append("keep_order", keepOrder ? "true" : "false");
+      formData.append("compress_output", createCompressed ? "true" : "false");
+
+      const res = await fetch(`${API_BASE}/merge-pdf`, {
+        method: "POST",
+        body: formData,
       });
 
-      // 👉 YAHAN APNA BACKEND URL DALNA HAI
-     const res = await fetch("https://easypdf-tools.onrender.com/merge-pdf", {
-  method: "POST",
-  body: formData,
-});
       if (!res.ok) {
-        throw new Error("Merge failed. Please try again.");
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Failed to merge PDF.");
       }
 
-      // Response ko Blob (PDF file) me convert karte hain
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+      setDownloadUrl(url);
+
+      // AUTO DOWNLOAD
       const a = document.createElement("a");
       a.href = url;
       a.download = "merged.pdf";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
+
+      setSuccessMsg("✅ Merged PDF downloaded. Check your Downloads folder.");
+    } catch (err: any) {
       console.error(err);
-      setError(err.message || "Something went wrong.");
+      setError(err?.message || "Something went wrong while merging PDFs.");
     } finally {
       setIsProcessing(false);
     }
@@ -58,7 +89,7 @@ export default function MergePdfPage() {
 
   return (
     <main className="page page--inner">
-      {/* HEADER same as home */}
+      {/* HEADER */}
       <header className="header">
         <div className="header-inner">
           <div className="header-left">
@@ -75,32 +106,33 @@ export default function MergePdfPage() {
         </div>
       </header>
 
-      {/* TOOL HERO */}
+      {/* HERO */}
       <section className="hero">
         <h1 className="hero-title">
           Merge <span className="hero-title-green">PDF</span> files
         </h1>
         <p className="hero-desc">
-          Combine multiple PDF files into a single document, in the exact order you want.
+          Combine multiple PDF files into one single document, in the exact order
+          you want.
         </p>
       </section>
 
-      {/* TOOL CONTENT CARD */}
+      {/* CONTENT */}
       <section className="tool-wrapper">
         <div className="tool-main-card">
           <h2 className="tool-main-title">Upload your files</h2>
           <p className="tool-main-subtitle">
-            Drag &amp; drop PDFs here, or click to select files from your device.
+            Drag & drop PDFs here, or click to select files from your device.
           </p>
 
           <form className="upload-form" onSubmit={handleSubmit}>
             <label className="dropzone">
               <input
                 type="file"
-                multiple
                 accept="application/pdf"
+                multiple
                 className="file-input"
-                onChange={handleFileChange}
+                onChange={(e) => onPickFiles(e.target.files)}
               />
               <div className="dropzone-inner">
                 <div className="dropzone-icon">⬆</div>
@@ -111,35 +143,61 @@ export default function MergePdfPage() {
 
             {files.length > 0 && (
               <div className="selected-info">
-                {files.length} file(s) selected
+                <b>{files.length}</b> file(s) selected
               </div>
             )}
 
             <div className="options-row">
-              <label className="checkbox-row">
-                <input type="checkbox" defaultChecked />
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={keepOrder}
+                  onChange={(e) => setKeepOrder(e.target.checked)}
+                />
                 <span>Keep original file order</span>
               </label>
 
-              <label className="checkbox-row">
-                <input type="checkbox" />
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={createCompressed}
+                  onChange={(e) => setCreateCompressed(e.target.checked)}
+                />
                 <span>Create compressed output</span>
               </label>
             </div>
 
             {error && <div className="error-text">{error}</div>}
+            {successMsg && <div className="success-text">{successMsg}</div>}
 
             <button
               type="submit"
               className="primary-btn"
-              disabled={isProcessing}
+              disabled={isProcessing || files.length < 2}
             >
               {isProcessing ? "Merging..." : "Merge PDF"}
             </button>
+
+            {/* Backup manual download button */}
+            {downloadUrl && (
+              <div className="download-box">
+                <div className="download-title">Your merged PDF is ready:</div>
+                <a
+                  href={downloadUrl}
+                  download="merged.pdf"
+                  className="download-btn"
+                >
+                  Download Merged PDF
+                </a>
+                <div className="download-note">
+                  If auto-download didn’t start, use this button.
+                </div>
+              </div>
+            )}
           </form>
         </div>
 
-        {/* SIDE INFO CARD */}
+        {/* SIDE CARD */}
         <aside className="side-card">
           <h3 className="side-title">Tips</h3>
           <ul className="side-list">
@@ -159,7 +217,7 @@ export default function MergePdfPage() {
         </div>
       </footer>
 
-      {/* SAME DESIGN CSS (home jaisa) */}
+      {/* SAME DESIGN CSS */}
       <style jsx>{`
         .page {
           min-height: 100vh;
@@ -168,7 +226,6 @@ export default function MergePdfPage() {
           font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
             sans-serif;
         }
-
         .page--inner {
           display: flex;
           flex-direction: column;
@@ -183,7 +240,6 @@ export default function MergePdfPage() {
           border-bottom: 1px solid rgba(22, 163, 74, 0.35);
           box-shadow: 0 10px 30px rgba(15, 118, 110, 0.4);
         }
-
         .header-inner {
           max-width: 1120px;
           margin: 0 auto;
@@ -192,13 +248,11 @@ export default function MergePdfPage() {
           align-items: center;
           justify-content: space-between;
         }
-
         .header-left {
           display: flex;
           align-items: center;
           gap: 12px;
         }
-
         .header-logo {
           width: 36px;
           height: 36px;
@@ -210,24 +264,20 @@ export default function MergePdfPage() {
           font-size: 11px;
           font-weight: 700;
         }
-
         .header-texts {
           display: flex;
           flex-direction: column;
           gap: 2px;
         }
-
         .header-title {
           font-size: 18px;
           font-weight: 800;
           letter-spacing: -0.03em;
         }
-
         .header-subtitle {
           font-size: 11px;
           opacity: 0.9;
         }
-
         .header-pill {
           display: inline-flex;
           padding: 6px 14px;
@@ -239,7 +289,6 @@ export default function MergePdfPage() {
           text-decoration: none;
           white-space: nowrap;
         }
-
         .header-pill:hover {
           background: rgba(255, 255, 255, 0.3);
         }
@@ -250,23 +299,19 @@ export default function MergePdfPage() {
           padding: 0 16px;
           text-align: center;
         }
-
         .hero-title {
           font-size: 30px;
           font-weight: 800;
           letter-spacing: -0.04em;
         }
-
         @media (min-width: 640px) {
           .hero-title {
             font-size: 38px;
           }
         }
-
         .hero-title-green {
           color: #059669;
         }
-
         .hero-desc {
           margin-top: 10px;
           font-size: 14px;
@@ -282,7 +327,6 @@ export default function MergePdfPage() {
           grid-template-columns: 1fr;
           gap: 18px;
         }
-
         @media (min-width: 900px) {
           .tool-wrapper {
             grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr);
@@ -297,12 +341,10 @@ export default function MergePdfPage() {
           box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
           padding: 18px 18px 20px 18px;
         }
-
         .tool-main-title {
           font-size: 16px;
           font-weight: 600;
         }
-
         .tool-main-subtitle {
           margin-top: 4px;
           font-size: 13px;
@@ -324,16 +366,13 @@ export default function MergePdfPage() {
           transition: all 0.15s ease-out;
           display: block;
         }
-
         .dropzone:hover {
           border-color: #059669;
           background: #ecfdf5;
         }
-
         .file-input {
           display: none;
         }
-
         .dropzone-inner {
           padding: 18px 14px;
           display: flex;
@@ -341,7 +380,6 @@ export default function MergePdfPage() {
           align-items: center;
           gap: 4px;
         }
-
         .dropzone-icon {
           width: 32px;
           height: 32px;
@@ -354,12 +392,10 @@ export default function MergePdfPage() {
           font-size: 18px;
           margin-bottom: 4px;
         }
-
         .dropzone-text-main {
           font-size: 14px;
           font-weight: 600;
         }
-
         .dropzone-text-sub {
           font-size: 12px;
           color: #6b7280;
@@ -372,28 +408,40 @@ export default function MergePdfPage() {
 
         .options-row {
           display: flex;
-          flex-direction: column;
-          gap: 6px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .checkbox {
+          display: inline-flex;
+          gap: 8px;
+          align-items: center;
           font-size: 12px;
           color: #374151;
+          user-select: none;
         }
-
-        @media (min-width: 640px) {
-          .options-row {
-            flex-direction: row;
-            justify-content: space-between;
-          }
-        }
-
-        .checkbox-row {
-          display: flex;
-          align-items: center;
-          gap: 6px;
+        .checkbox input {
+          width: 14px;
+          height: 14px;
+          accent-color: #059669;
         }
 
         .error-text {
           font-size: 12px;
           color: #b91c1c;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 12px;
+          padding: 10px 12px;
+        }
+        .success-text {
+          font-size: 12px;
+          color: #065f46;
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+          border-radius: 12px;
+          padding: 10px 12px;
         }
 
         .primary-btn {
@@ -410,16 +458,48 @@ export default function MergePdfPage() {
           box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
           transition: all 0.15s ease-out;
         }
-
         .primary-btn:hover:not(:disabled) {
           transform: translateY(-1px);
           box-shadow: 0 16px 30px rgba(16, 185, 129, 0.5);
         }
-
         .primary-btn:disabled {
           opacity: 0.7;
           cursor: default;
           box-shadow: none;
+        }
+
+        .download-box {
+          margin-top: 6px;
+          border: 1px solid #e5e7eb;
+          border-radius: 14px;
+          padding: 12px;
+          background: #f9fafb;
+        }
+        .download-title {
+          font-size: 12px;
+          color: #374151;
+          margin-bottom: 8px;
+          font-weight: 600;
+        }
+        .download-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 14px;
+          border-radius: 12px;
+          background: #059669;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 700;
+        }
+        .download-btn:hover {
+          background: #047857;
+        }
+        .download-note {
+          margin-top: 8px;
+          font-size: 11px;
+          color: #6b7280;
         }
 
         .side-card {
@@ -428,13 +508,11 @@ export default function MergePdfPage() {
           border: 1px solid #e5e7eb;
           padding: 16px 16px 14px 16px;
         }
-
         .side-title {
           font-size: 14px;
           font-weight: 600;
           margin-bottom: 6px;
         }
-
         .side-list {
           list-style: disc;
           padding-left: 18px;
@@ -442,7 +520,6 @@ export default function MergePdfPage() {
           font-size: 12px;
           color: #4b5563;
         }
-
         .side-list li + li {
           margin-top: 4px;
         }
@@ -451,7 +528,6 @@ export default function MergePdfPage() {
           border-top: 1px solid #e5e7eb;
           background: #ffffff;
         }
-
         .footer-inner {
           max-width: 1120px;
           margin: 0 auto;
@@ -464,7 +540,6 @@ export default function MergePdfPage() {
           gap: 4px;
           text-align: center;
         }
-
         .footer-dot {
           opacity: 0.7;
         }
