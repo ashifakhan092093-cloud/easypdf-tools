@@ -226,13 +226,16 @@ export default function Home() {
     <span className="footer-dot">•</span>
 
     <Link href="/privacy-policy/page">Privacy Policy</Link>
-    <span className="footer-dot">•</span>
-
-    <Link href="/terms/page">Terms & Conditions</Link>
-    <span className="footer-dot">•</span>
 <span className="footer-dot">•</span>
+
+<Link href="/terms/page">Terms & Conditions</Link>
+<span className="footer-dot">•</span>
+
 <Link href="/contact/page">Contact</Link>
-    <Link href="/about/page">About Us</Link>
+<span className="footer-dot">•</span>
+
+<Link href="/about/page">About Us</Link>
+
   </div>
 </footer>
 
