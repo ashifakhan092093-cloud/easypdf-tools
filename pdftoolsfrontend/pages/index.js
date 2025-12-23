@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Head from "next/head";
 
 const FILTERS = [
   "All",
@@ -11,26 +12,99 @@ const FILTERS = [
 ];
 
 const TOOLS = [
-  { name: "Merge PDF", href: "/merge-pdf/page", desc: "Combine PDFs in the order you want.", tag: "Organize PDF" },
-  { name: "Split PDF", href: "/pdf-split/page", desc: "Split a PDF into multiple files.", tag: "Organize PDF" },
-  { name: "Compress PDF", href: "/compress-pdf/page", desc: "Reduce file size while keeping quality.", tag: "Optimize PDF" },
+  // ✅ WORKING
+  {
+    name: "Merge PDF",
+    href: "/merge-pdf/page",
+    desc: "Combine PDFs in the order you want.",
+    tag: "Organize PDF",
+  },
+  {
+    name: "Compress PDF",
+    href: "/compress-pdf/page",
+    desc: "Reduce file size while keeping quality.",
+    tag: "Optimize PDF",
+  },
+  {
+    name: "PDF to JPG",
+    href: "/pdf-to-jpg/page",
+    desc: "Convert each PDF page into JPG images (ZIP download).",
+    tag: "Convert PDF",
+  },
+  {
+    name: "JPG to PDF",
+    href: "/jpg-to-pdf/page",
+    desc: "Convert multiple JPG images into a single PDF.",
+    tag: "Convert PDF",
+  },
 
-  { name: "PDF to JPG", href: "/pdf-to-jpg/page", desc: "Convert each PDF page into JPG images (ZIP download).", tag: "Convert PDF" },
-  { name: "JPG to PDF", href: "/jpg-to-pdf/page", desc: "Convert multiple JPG images into a single PDF.", tag: "Convert PDF" },
-
-  { name: "PDF to Word", href: "/pdf-to-word/page", desc: "Convert PDF to DOCX editable files.", tag: "Convert PDF" },
-  { name: "Word to PDF", href: "/word-to-pdf/page", desc: "Save Word documents as PDF.", tag: "Convert PDF" },
-  { name: "PDF to Excel", href: "/pdf-to-excel/page", desc: "Turn PDF tables into Excel sheets.", tag: "Convert PDF" },
-  { name: "Excel to PDF", href: "/excel-to-pdf/page", desc: "Convert Excel sheets into PDFs.", tag: "Convert PDF" },
-
-  { name: "Rotate PDF", href: "/rotate-pdf/page", desc: "Fix sideways or flipped pages.", tag: "Organize PDF" },
-
-  { name: "Protect PDF", href: "/protect-pdf/page", desc: "Lock PDFs with password protection.", tag: "PDF Security" },
-  { name: "Unlock PDF", href: "/unlock-pdf/page", desc: "Remove password from PDFs.", tag: "PDF Security" },
-
-  { name: "Watermark PDF", href: "/watermark/page", desc: "Add text or image watermarks.", tag: "Edit PDF" },
-  { name: "Repair PDF", href: "/repair-pdf/page", desc: "Recover damaged PDF files.", tag: "Edit PDF" },
-  { name: "Add Page Numbers", href: "/add-page-number/page", desc: "Insert page numbers in long documents.", tag: "Edit PDF" },
+  // 🚧 COMING SOON (not working yet)
+  {
+    name: "Split PDF",
+    href: "/coming-soon/page?tool=Split%20PDF",
+    desc: "Split a PDF into multiple files.",
+    tag: "Organize PDF",
+  },
+  {
+    name: "PDF to Word",
+    href: "/coming-soon/page?tool=PDF%20to%20Word",
+    desc: "Convert PDF to DOCX editable files.",
+    tag: "Convert PDF",
+  },
+  {
+    name: "Word to PDF",
+    href: "/coming-soon/page?tool=Word%20to%20PDF",
+    desc: "Save Word documents as PDF.",
+    tag: "Convert PDF",
+  },
+  {
+    name: "PDF to Excel",
+    href: "/coming-soon/page?tool=PDF%20to%20Excel",
+    desc: "Turn PDF tables into Excel sheets.",
+    tag: "Convert PDF",
+  },
+  {
+    name: "Excel to PDF",
+    href: "/coming-soon/page?tool=Excel%20to%20PDF",
+    desc: "Convert Excel sheets into PDFs.",
+    tag: "Convert PDF",
+  },
+  {
+    name: "Rotate PDF",
+    href: "/coming-soon/page?tool=Rotate%20PDF",
+    desc: "Fix sideways or flipped pages.",
+    tag: "Organize PDF",
+  },
+  {
+    name: "Protect PDF",
+    href: "/coming-soon/page?tool=Protect%20PDF",
+    desc: "Lock PDFs with password protection.",
+    tag: "PDF Security",
+  },
+  {
+    name: "Unlock PDF",
+    href: "/coming-soon/page?tool=Unlock%20PDF",
+    desc: "Remove password from PDFs.",
+    tag: "PDF Security",
+  },
+  {
+    name: "Watermark PDF",
+    href: "/coming-soon/page?tool=Watermark%20PDF",
+    desc: "Add text or image watermarks.",
+    tag: "Edit PDF",
+  },
+  {
+    name: "Repair PDF",
+    href: "/coming-soon/page?tool=Repair%20PDF",
+    desc: "Recover damaged PDF files.",
+    tag: "Edit PDF",
+  },
+  {
+    name: "Add Page Numbers",
+    href: "/coming-soon/page?tool=Add%20Page%20Numbers",
+    desc: "Insert page numbers in long documents.",
+    tag: "Edit PDF",
+  },
 ];
 
 export default function Home() {
@@ -53,8 +127,21 @@ export default function Home() {
   });
 
   return (
-    <main className={`page ${mounted ? "page--mounted" : ""}`}>
-      {/* HEADER */}
+  <main className={`page ${mounted ? "page--mounted" : ""}`}>
+
+    <Head>
+      <title>EasyPDF Tools – Free Online PDF Tools</title>
+      <meta
+        name="description"
+        content="Free online PDF tools to merge, compress, convert PDF to JPG and JPG to PDF. Fast, secure and easy to use."
+      />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </Head>
+
+    {/* HEADER */}
+    <header className="header">
+      ...
+    </header>
       <header className="header">
         <div className="header-inner">
           <div className="header-left">
@@ -64,18 +151,21 @@ export default function Home() {
               <div className="header-subtitle">Fast • Free • Secure</div>
             </div>
           </div>
-          <button className="header-pill">All tools for your everyday PDF work</button>
+          <button className="header-pill">
+            All tools for your everyday PDF work
+          </button>
         </div>
       </header>
 
       {/* HERO */}
       <section className="hero">
         <h1 className="hero-title">
-          Work with your <span className="hero-title-green">PDFs</span> effortlessly
+          Work with your <span className="hero-title-green">PDFs</span>{" "}
+          effortlessly
         </h1>
         <p className="hero-desc">
-          Professional tools to merge, split, compress, convert, rotate, unlock and watermark PDFs —
-          all in one clean workspace.
+          Professional tools to merge, split, compress, convert, rotate, unlock
+          and watermark PDFs — all in one clean workspace.
         </p>
       </section>
 
@@ -110,7 +200,10 @@ export default function Home() {
       <section className="tools-grid">
         {filteredTools.map((tool, index) => (
           <Link key={tool.name} href={tool.href} className="tool-card">
-            <div className="tool-card-inner" style={{ animationDelay: `${index * 0.03}s` }}>
+            <div
+              className="tool-card-inner"
+              style={{ animationDelay: `${index * 0.03}s` }}
+            >
               <div className="tool-top">
                 <div className="tool-icon">PDF</div>
                 <div className="tool-texts">
