@@ -220,14 +220,21 @@ export default function Home() {
         ))}
       </section>
 
-      {/* FOOTER */}
       <footer className="footer">
-        <div className="footer-inner">
-          <span>© {new Date().getFullYear()} EasyPDF Tools</span>
-          <span className="footer-dot">•</span>
-          <span>Secure file processing, no signup required.</span>
-        </div>
-      </footer>
+  <div className="footer-inner">
+    <span>© {new Date().getFullYear()} EasyPDF Tools</span>
+    <span className="footer-dot">•</span>
+
+    <Link href="/privacy-policy/page">Privacy Policy</Link>
+    <span className="footer-dot">•</span>
+
+    <Link href="/terms/page">Terms & Conditions</Link>
+    <span className="footer-dot">•</span>
+
+    <Link href="/about/page">About Us</Link>
+  </div>
+</footer>
+
 
       <style jsx>{`
         .page{min-height:100vh;background:#f3f4f6;color:#0f172a;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;opacity:0;transform:translateY(8px)}

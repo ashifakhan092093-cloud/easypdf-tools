@@ -6,3 +6,14 @@
   <url><loc>https://easypdf-frontend.onrender.com/pdf-to-jpg/page</loc></url>
   <url><loc>https://easypdf-frontend.onrender.com/jpg-to-pdf/page</loc></url>
 </urlset>
+<url>
+  <loc>https://easypdf-frontend.onrender.com/privacy-policy/page</loc>
+</url>
+
+<url>
+  <loc>https://easypdf-frontend.onrender.com/terms/page</loc>
+</url>
+
+<url>
+  <loc>https://easypdf-frontend.onrender.com/about/page</loc>
+</url>
