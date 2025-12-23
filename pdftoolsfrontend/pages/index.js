@@ -230,7 +230,8 @@ export default function Home() {
 
     <Link href="/terms/page">Terms & Conditions</Link>
     <span className="footer-dot">•</span>
-
+<span className="footer-dot">•</span>
+<Link href="/contact/page">Contact</Link>
     <Link href="/about/page">About Us</Link>
   </div>
 </footer>
